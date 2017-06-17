@@ -14,7 +14,7 @@ import {TemplateSelectorSvc} from './template-selector/template-selector.service
 import {ImportBlankProjectService} from './import-blank-project/import-blank-project.service';
 import {ImportGitProjectService} from './import-git-project/import-git-project.service';
 import {ImportZipProjectService} from './import-zip-project/import-zip-project.service';
-import {Observable} from '../../../../components/utils/observable';
+import {ProjectSourceSelectorServiceObservable} from './project-source-selector-service-observable';
 import {ProjectMetadataService} from './project-metadata/project-metadata.service';
 import {RandomSvc} from '../../../../components/utils/random.service';
 
@@ -23,7 +23,7 @@ import {RandomSvc} from '../../../../components/utils/random.service';
  *
  * @author Oleksii Kurinnyi
  */
-export class ProjectSourceSelectorService extends Observable {
+export class ProjectSourceSelectorService extends ProjectSourceSelectorServiceObservable {
   /**
    * Template selector service.
    */
@@ -99,14 +99,12 @@ export class ProjectSourceSelectorService extends Observable {
         const projectTemplate = this.buildProjectTemplate(projectProps);
         this.addProjectTemplate(source, projectTemplate);
       }
-        this.importBlankProjectService.clearProjectProps();
         break;
       case ProjectSource.GIT: {
         const projectProps = this.importGitProjectService.getProjectProps();
         const projectTemplate = this.buildProjectTemplate(projectProps);
         this.addProjectTemplate(source, projectTemplate);
       }
-        this.importGitProjectService.clearProjectProps();
         break;
       case ProjectSource.GITHUB:
         break;
@@ -115,9 +113,10 @@ export class ProjectSourceSelectorService extends Observable {
         const projectTemplate = this.buildProjectTemplate(projectProps);
         this.addProjectTemplate(source, projectTemplate);
       }
-        this.importZipProjectService.clearProjectProps();
         break;
     }
+
+    this.publish(source);
   }
 
   /**
@@ -138,8 +137,6 @@ export class ProjectSourceSelectorService extends Observable {
     }
 
     this.projectTemplates.push(projectTemplate);
-
-    this.publish(origName);
   }
 
   /**
@@ -229,15 +226,23 @@ export class ProjectSourceSelectorService extends Observable {
   }
 
   /**
-   * Reset section flow.
+   * Resets project's section flow.
    */
-  clearAll(): void {
-    this.templateSelectorSvc.clearTemplatesList();
-    this.importBlankProjectService.clearProjectProps();
-    this.importGitProjectService.clearProjectProps();
-    this.importZipProjectService.clearProjectProps();
+  clearAllSources(): void {
+    ProjectSource.values().forEach((source: ProjectSource) => {
+      this.clearSource(source);
+    });
 
     this.projectTemplates = [];
+  }
+
+  /**
+   * Resets project template's source.
+   *
+   * @param {ProjectSource} source the project's source
+   */
+  clearSource(source: ProjectSource): void {
+    this.publish(source);
   }
 
 }

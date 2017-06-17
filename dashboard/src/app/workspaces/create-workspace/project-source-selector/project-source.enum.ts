@@ -11,3 +11,24 @@
 'use strict';
 
 export enum ProjectSource { SAMPLES = 1, BLANK, GIT, GITHUB, ZIP }
+
+export namespace ProjectSource {
+  export function keys(): string[] {
+    return [
+      ProjectSource[ProjectSource.SAMPLES].toString(),
+      ProjectSource[ProjectSource.BLANK].toString(),
+      ProjectSource[ProjectSource.GIT].toString(),
+      ProjectSource[ProjectSource.GITHUB].toString(),
+      ProjectSource[ProjectSource.ZIP].toString()
+    ];
+  }
+  export function values(): ProjectSource[] {
+    return [
+      ProjectSource.SAMPLES,
+      ProjectSource.BLANK,
+      ProjectSource.GIT,
+      ProjectSource.GITHUB,
+      ProjectSource.ZIP
+    ];
+  }
+}

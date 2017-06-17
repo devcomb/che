@@ -66,12 +66,4 @@ export class ImportGitProjectService {
     return props;
   }
 
-  /**
-   * Clear _location field.
-   */
-  clearProjectProps(): void {
-    this._location = '';
-  }
-
-
 }

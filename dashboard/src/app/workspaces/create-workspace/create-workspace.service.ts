@@ -157,7 +157,7 @@ export class CreateWorkspaceSvc {
 
       this.cheWorkspace.startWorkspace(workspace.id, workspace.config.defaultEnv).then(() => {
         this.redirectToIde(namespaceId, workspace);
-        this.projectSourceSelectorService.clearAll();
+        this.projectSourceSelectorService.clearAllSources();
 
         this.cheWorkspace.getWorkspacesById().set(workspace.id, workspace);
         this.cheWorkspace.startUpdateWorkspaceStatus(workspace.id);

@@ -13,13 +13,15 @@
 import {TemplateSelectorSvc} from './template-selector.service';
 import {StackSelectorSvc} from '../../stack-selector/stack-selector.service';
 import {ProjectSourceSelectorService} from '../project-source-selector.service';
+import {IProjectSourceSelectorServiceObserver} from '../project-source-selector-service.observer';
+import {ProjectSource} from '../project-source.enum';
 
 /**
  * This class is handling the controller for template selector.
  *
  * @author Oleksii Kurinnyi
  */
-export class TemplateSelectorController {
+export class TemplateSelectorController implements IProjectSourceSelectorServiceObserver {
   /**
    * Filter service.
    */
@@ -86,7 +88,7 @@ export class TemplateSelectorController {
     this.onStackChanged();
     this.stackSelectorSvc.subscribe(this.onStackChanged.bind(this));
 
-    this.projectSourceSelectorService.subscribe(this.onProjectTemplateAdded.bind(this));
+    this.projectSourceSelectorService.subscribe(this.onProjectSourceSelectorServicePublish.bind(this));
   }
 
   /**
@@ -107,12 +109,21 @@ export class TemplateSelectorController {
 
   /**
    * Callback which is called when project template is added to the list of ready-to-import projects.
+   * Make samples not checked.
+   *
+   * @param {ProjectSource} source the project's source
    */
-  onProjectTemplateAdded(projectTemplateName: string): void {
-    this.cheListHelper.itemsSelectionStatus[projectTemplateName] = false;
+  onProjectSourceSelectorServicePublish(source: ProjectSource): void {
+    if (source !== ProjectSource.SAMPLES) {
+      return;
+    }
 
-    this.selectedTemplates = this.cheListHelper.getSelectedItems() as Array<che.IProjectTemplate>;
+    this.cheListHelper.deselectAllItems();
+    this.selectedTemplates = [];
+
     this.updateNumberOfSelectedTemplates();
+
+    this.templateSelectorSvc.onTemplateSelected(this.selectedTemplates);
   }
 
   /**
@@ -136,13 +147,10 @@ export class TemplateSelectorController {
 
   /**
    * Callback which is when the template checkbox is clicked.
-   *
-   * @param {string} templateName the project template's name
-   * @param {boolean} isChecked <code>true</code> if template's checkbox is checked.
    */
-  onTemplateClicked(templateName: string, isChecked: boolean): void {
+  onTemplateChanged(): void {
     this.selectedTemplates = this.cheListHelper.getSelectedItems() as Array<che.IProjectTemplate>;
-    this.templateSelectorSvc.onTemplatesSelected(this.selectedTemplates);
+    this.templateSelectorSvc.onTemplateSelected(this.selectedTemplates);
 
     this.updateNumberOfSelectedTemplates();
   }

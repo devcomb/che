@@ -12,13 +12,15 @@
 
 import {ProjectSourceSelectorService} from '../project-source-selector.service';
 import {ImportBlankProjectService} from './import-blank-project.service';
+import {IProjectSourceSelectorServiceObserver} from '../project-source-selector-service.observer';
+import {ProjectSource} from '../project-source.enum';
 
 /**
  * This class is handling the controller for the blank project import.
  *
  * @author Oleksii Kurinnyi
  */
-export class ImportBlankProjectController {
+export class ImportBlankProjectController implements IProjectSourceSelectorServiceObserver {
   /**
    * Project selector service.
    */
@@ -47,11 +49,17 @@ export class ImportBlankProjectController {
     this.name = this.importBlankProjectService.name;
     this.description = this.importBlankProjectService.description;
 
-    this.projectSourceSelectorService.subscribe(this.clearFields.bind(this));
+    this.projectSourceSelectorService.subscribe(this.onProjectSourceSelectorServicePublish.bind(this));
   }
 
-  clearFields(name: string): void {
-    if (name !== this.name) {
+  /**
+   * Callback which is called when project template is added to the list of ready-to-import projects.
+   * Clears name and description.
+   *
+   * @param {ProjectSource} source the project's source
+   */
+  onProjectSourceSelectorServicePublish(source: ProjectSource): void {
+    if (source !== ProjectSource.BLANK) {
       return;
     }
 

@@ -71,12 +71,4 @@ export class ImportBlankProjectService {
     return props;
   }
 
-  /**
-   * Clear _name and _description fields.
-   */
-  clearProjectProps(): void {
-    this._name = '';
-    this._description = '';
-  }
-
 }

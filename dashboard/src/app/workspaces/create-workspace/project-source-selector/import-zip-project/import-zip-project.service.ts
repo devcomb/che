@@ -80,12 +80,4 @@ export class ImportZipProjectService {
     return props;
   }
 
-  /**
-   * Clear _location and _skipFirstLevel fields.
-   */
-  clearProjectProps(): void {
-    this._location = '';
-    this._skipFirstLevel = false;
-  }
-
 }

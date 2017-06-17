@@ -12,13 +12,15 @@
 
 import {ImportZipProjectService} from './import-zip-project.service';
 import {ProjectSourceSelectorService} from '../project-source-selector.service';
+import {IProjectSourceSelectorServiceObserver} from '../project-source-selector-service.observer';
+import {ProjectSource} from '../project-source.enum';
 
 /**
  * This class is handling the controller for the Zip project import.
  *
  * @author Oleksii Kurinnyi
  */
-export class ImportZipProjectController {
+export class ImportZipProjectController implements IProjectSourceSelectorServiceObserver {
   /**
    * Import Zip project service.
    */
@@ -47,12 +49,17 @@ export class ImportZipProjectController {
     this.location = this.importZipProjectService.location;
     this.skipFirstLevel = this.importZipProjectService.skipFirstLevel;
 
-    this.projectSourceSelectorService.subscribe(this.clearFields.bind(this));
+    this.projectSourceSelectorService.subscribe(this.onProjectSourceSelectorServicePublish.bind(this));
   }
 
-  clearFields(projectTemplateName: string): void {
-    const re = new RegExp('/' + projectTemplateName + '.zip');
-    if (!re.test(this.location)) {
+  /**
+   * Callback which is called when project template is added to the list of ready-to-import projects.
+   * Clears project's location.
+   *
+   * @param {ProjectSource} source the project's source
+   */
+  onProjectSourceSelectorServicePublish(source: ProjectSource): void {
+    if (source !== ProjectSource.ZIP) {
       return;
     }
 

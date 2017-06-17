@@ -12,13 +12,15 @@
 
 import {ImportGitProjectService} from './import-git-project.service';
 import {ProjectSourceSelectorService} from '../project-source-selector.service';
+import {IProjectSourceSelectorServiceObserver} from '../project-source-selector-service.observer';
+import {ProjectSource} from '../project-source.enum';
 
 /**
  * This class is handling the controller for the Git project import.
  *
  * @author Oleksii Kurinnyi
  */
-export class ImportGitProjectController {
+export class ImportGitProjectController implements IProjectSourceSelectorServiceObserver {
   /**
    * Import Git project service.
    */
@@ -42,12 +44,17 @@ export class ImportGitProjectController {
 
     this.location = this.importGitProjectService.location;
 
-    this.projectSourceSelectorService.subscribe(this.clearField.bind(this));
+    this.projectSourceSelectorService.subscribe(this.onProjectSourceSelectorServicePublish.bind(this));
   }
 
-  clearField(projectTemplateName: string): void {
-    const re = new RegExp('/' + projectTemplateName + '.git');
-    if (!re.test(this.location)) {
+  /**
+   * Callback which is called when project template is added to the list of ready-to-import projects.
+   * Clears project's location.
+   *
+   * @param {ProjectSource} source the project's source
+   */
+  onProjectSourceSelectorServicePublish(source: ProjectSource): void {
+    if (source !== ProjectSource.GIT) {
       return;
     }
 

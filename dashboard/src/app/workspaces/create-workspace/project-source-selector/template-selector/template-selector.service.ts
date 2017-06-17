@@ -91,7 +91,7 @@ export class TemplateSelectorSvc {
    *
    * @param {Array<che.IProjectTemplate>} templates the list of selected templates
    */
-  onTemplatesSelected(templates: Array<che.IProjectTemplate>): void {
+  onTemplateSelected(templates: Array<che.IProjectTemplate>): void {
     this.templates = templates;
   }
 
@@ -102,13 +102,6 @@ export class TemplateSelectorSvc {
    */
   getTemplates(): Array<che.IProjectTemplate> {
     return angular.copy(this.templates);
-  }
-
-  /**
-   * Clear list of selected templates.
-   */
-  clearTemplatesList(): void {
-    this.templates = [];
   }
 
 }

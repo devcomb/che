@@ -27,6 +27,10 @@ export class ProjectSourceSelectorController {
   updateWidget: Function;
 
   /**
+   * Scope.
+   */
+  private $scope: ng.IScope;
+  /**
    * Project selector service.
    */
   private projectSourceSelectorService: ProjectSourceSelectorService;
@@ -67,7 +71,8 @@ export class ProjectSourceSelectorController {
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor(projectSourceSelectorService: ProjectSourceSelectorService) {
+  constructor($scope: ng.IScope, projectSourceSelectorService: ProjectSourceSelectorService) {
+    this.$scope = $scope;
     this.projectSourceSelectorService = projectSourceSelectorService;
 
     this.projectSource = ProjectSource;
@@ -76,7 +81,9 @@ export class ProjectSourceSelectorController {
     this.buttonType = ButtonType;
     this.selectedButtonType = ButtonType.ADD_PROJECT;
 
-    this.projectSourceSelectorService.clearAll();
+    this.$scope.$on('$destroy', () => {
+      this.projectSourceSelectorService.clearAllSources();
+    });
   }
 
   /**
@@ -86,6 +93,13 @@ export class ProjectSourceSelectorController {
     this.projectSourceSelectorService.addProjectTemplateFromSource(this.selectedSource);
 
     this.projectTemplates = this.projectSourceSelectorService.getProjectTemplates();
+  }
+
+  /**
+   * Resets input fields and checkboxes for selected source.
+   */
+  cancelProjectTemplate(): void {
+    this.projectSourceSelectorService.clearSource(this.selectedSource);
   }
 
   /**
@@ -127,13 +141,6 @@ export class ProjectSourceSelectorController {
    * @param template {che.IProjectTemplate} the project's template
    */
   updateData({buttonState, buttonType, template = null}: { buttonState: boolean, buttonType: ButtonType, template?: che.IProjectTemplate }): void {
-    if (!buttonState) {
-      return;
-    }
-
-    this.selectedButtonType = buttonType;
-    this.projectTemplate = angular.copy(template);
-    this.projectTemplateCopy = angular.copy(template);
 
     const buttonValue = template
       ? template.name
@@ -143,6 +150,14 @@ export class ProjectSourceSelectorController {
     this.buttonValues = {
       [buttonValue]: true
     };
+
+    if (!buttonState) {
+      return;
+    }
+
+    this.selectedButtonType = buttonType;
+    this.projectTemplate = angular.copy(template);
+    this.projectTemplateCopy = angular.copy(template);
 
     if (angular.isFunction(this.updateWidget)) {
       // update widget
