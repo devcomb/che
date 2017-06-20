@@ -3,7 +3,7 @@
 
     <!-- Project name -->
     <che-input-box che-form="projectMetadataForm"
-                   che-name="name"
+                   che-name="projectName"
                    che-label-name="Project Name"
                    che-place-holder="Name of the project"
                    aria-label="Name of the project"
@@ -22,7 +22,7 @@
 
     <!-- Project description -->
     <che-input-box che-form="projectMetadataForm"
-                   che-name="description"
+                   che-name="projectDescription"
                    che-label-name="Description"
                    che-place-holder="Description of the project"
                    aria-label="Description of the project"
@@ -36,7 +36,7 @@
     <!-- Git URL -->
     <che-inputbox ng-if="projectMetadataController.template.sourceType==='git'"
                   che-form="projectMetadataForm"
-                  che-name="gitURL"
+                  che-name="projectGitURL"
                   che-label-name="Repository URL"
                   che-place-holder="Url of the git repository"
                   aria-label="Url of the git repository"
@@ -52,7 +52,7 @@
     <!-- Zip URL -->
     <che-inputbox ng-if="projectMetadataController.template.sourceType==='zip'"
                   che-form="createProjectZipForm"
-                  che-name="zipURL"
+                  che-name="projectZipURL"
                   che-label-name="ZIP file URL"
                   che-place-holder="Url of the zip file"
                   aria-label="Url of the zip file"
