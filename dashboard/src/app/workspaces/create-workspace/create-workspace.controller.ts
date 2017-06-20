@@ -17,7 +17,6 @@ import {CreateWorkspaceSvc} from './create-workspace.service';
 import {NamespaceSelectorSvc} from './namespace-selector/namespace-selector.service';
 import {StackSelectorSvc} from './stack-selector/stack-selector.service';
 import {RandomSvc} from '../../../components/utils/random.service';
-import {ICreateWorkspaceInitData} from '../workspace-config.service';
 
 /**
  * This class is handling the controller for workspace creation.
@@ -90,7 +89,7 @@ export class CreateWorkspaceController {
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor($timeout: ng.ITimeoutService, cheEnvironmentRegistry: CheEnvironmentRegistry, createWorkspaceSvc: CreateWorkspaceSvc, namespaceSelectorSvc: NamespaceSelectorSvc, stackSelectorSvc: StackSelectorSvc, randomSvc: RandomSvc, initData: ICreateWorkspaceInitData) {
+  constructor($timeout: ng.ITimeoutService, cheEnvironmentRegistry: CheEnvironmentRegistry, createWorkspaceSvc: CreateWorkspaceSvc, namespaceSelectorSvc: NamespaceSelectorSvc, stackSelectorSvc: StackSelectorSvc, randomSvc: RandomSvc) {
     this.$timeout = $timeout;
     this.cheEnvironmentRegistry = cheEnvironmentRegistry;
     this.createWorkspaceSvc = createWorkspaceSvc;

@@ -15,13 +15,7 @@ import {NamespaceSelectorSvc} from './create-workspace/namespace-selector/namesp
 import {CreateWorkspaceSvc} from './create-workspace/create-workspace.service';
 import {StackSelectorSvc} from './create-workspace/stack-selector/stack-selector.service';
 import {TemplateSelectorSvc} from './create-workspace/project-source-selector/template-selector/template-selector.service';
-
-export interface ICreateWorkspaceInitData {
-  namespaceId: string;
-  workspaces: Array<che.IWorkspace>;
-  stacks: Array<che.IStack>;
-  templates: Array<che.IProjectTemplate>;
-}
+import {ImportGithubProjectService} from './create-workspace/project-source-selector/import-github-project/import-github-project.service';
 
 /**
  * This class is handling the service for routes resolving.
@@ -57,11 +51,15 @@ export class WorkspaceConfigService {
    * Template selector service.
    */
   private templateSelectorSvc: TemplateSelectorSvc;
+  /**
+   * Import GitHub project service.
+   */
+  private importGithubProjectService: ImportGithubProjectService;
 
   /** Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor($log: ng.ILogService, $q: ng.IQService, cheWorkspace: CheWorkspace, namespaceSelectorSvc: NamespaceSelectorSvc, createWorkspaceSvc: CreateWorkspaceSvc, stackSelectorSvc: StackSelectorSvc, templateSelectorSvc: TemplateSelectorSvc) {
+  constructor($log: ng.ILogService, $q: ng.IQService, cheWorkspace: CheWorkspace, namespaceSelectorSvc: NamespaceSelectorSvc, createWorkspaceSvc: CreateWorkspaceSvc, stackSelectorSvc: StackSelectorSvc, templateSelectorSvc: TemplateSelectorSvc, importGithubProjectService: ImportGithubProjectService) {
     this.$log = $log;
     this.$q = $q;
     this.cheWorkspace = cheWorkspace;
@@ -69,14 +67,15 @@ export class WorkspaceConfigService {
     this.createWorkspaceSvc = createWorkspaceSvc;
     this.stackSelectorSvc = stackSelectorSvc;
     this.templateSelectorSvc = templateSelectorSvc;
+    this.importGithubProjectService = importGithubProjectService;
   }
 
   /**
    * Returns promise to resolve route for workspace creation page.
    *
-   * @return {ng.IPromise<ICreateWorkspaceInitData>}
+   * @return {ng.IPromise<any>}
    */
-  resolveCreateWorkspaceRoute(): ng.IPromise<ICreateWorkspaceInitData> {
+  resolveCreateWorkspaceRoute(): ng.IPromise<any> {
     const namespaceIdDefer = this.$q.defer(),
           workspacesDefer = this.$q.defer();
 
@@ -96,14 +95,18 @@ export class WorkspaceConfigService {
       workspacesDefer.resolve([]);
     });
 
-    return this.$q.all({
-      namespaceId: namespaceIdDefer.promise,
-      workspaces: workspacesDefer.promise,
-      stacks: this.stackSelectorSvc.getOrFetchStacks(),
-      templates: this.templateSelectorSvc.getOrFetchTemplates()
-    }).then((results: ICreateWorkspaceInitData) => {
-      return results;
+    // resolve GitHub repositories
+    const githubRepositoriesPromise = this.$q.all([this.importGithubProjectService.getOrFetchUserId(), this.importGithubProjectService.getOrFetchOAuthProvider()]).then(() => {
+      return this.importGithubProjectService.askLoad();
     });
+
+    return this.$q.all([
+      namespaceIdDefer.promise,
+      workspacesDefer.promise,
+      this.stackSelectorSvc.getOrFetchStacks(),
+      this.templateSelectorSvc.getOrFetchTemplates(),
+      githubRepositoriesPromise
+    ]);
   }
 
   /**
