@@ -17,6 +17,7 @@ import {ImportZipProjectService} from './import-zip-project/import-zip-project.s
 import {ProjectSourceSelectorServiceObservable} from './project-source-selector-service-observable';
 import {ProjectMetadataService} from './project-metadata/project-metadata.service';
 import {RandomSvc} from '../../../../components/utils/random.service';
+import {ImportGithubProjectService} from './import-github-project/import-github-project.service';
 
 /**
  * This class is handling the service for the project selector.
@@ -36,6 +37,10 @@ export class ProjectSourceSelectorService extends ProjectSourceSelectorServiceOb
    * Import Git project service.
    */
   private importGitProjectService: ImportGitProjectService;
+  /**
+   * Import GitHub project service.
+   */
+  private importGithubProjectService: ImportGithubProjectService;
   /**
    * Import Zip project service.
    */
@@ -57,12 +62,13 @@ export class ProjectSourceSelectorService extends ProjectSourceSelectorServiceOb
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor(templateSelectorSvc: TemplateSelectorSvc, importBlankProjectService: ImportBlankProjectService, importGitProjectService: ImportGitProjectService, importZipProjectService: ImportZipProjectService, projectMetadataService: ProjectMetadataService, randomSvc: RandomSvc) {
+  constructor(templateSelectorSvc: TemplateSelectorSvc, importBlankProjectService: ImportBlankProjectService, importGitProjectService: ImportGitProjectService, importGithubProjectService: ImportGithubProjectService, importZipProjectService: ImportZipProjectService, projectMetadataService: ProjectMetadataService, randomSvc: RandomSvc) {
     super();
 
     this.templateSelectorSvc = templateSelectorSvc;
     this.importBlankProjectService = importBlankProjectService;
     this.importGitProjectService = importGitProjectService;
+    this.importGithubProjectService = importGithubProjectService;
     this.importZipProjectService = importZipProjectService;
     this.projectMetadataService = projectMetadataService;
     this.randomSvc = randomSvc;
@@ -106,7 +112,13 @@ export class ProjectSourceSelectorService extends ProjectSourceSelectorServiceOb
         this.addProjectTemplate(source, projectTemplate);
       }
         break;
-      case ProjectSource.GITHUB:
+      case ProjectSource.GITHUB: {
+        const repositoriesProps = this.importGithubProjectService.getRepositoriesProps();
+        repositoriesProps.forEach((repositoryProps: che.IProjectTemplate) => {
+          const projectTemplate = this.buildProjectTemplate(repositoryProps);
+          this.addProjectTemplate(source, projectTemplate);
+        });
+      }
         break;
       case ProjectSource.ZIP: {
         const projectProps = this.importZipProjectService.getProjectProps();
