@@ -495,6 +495,7 @@ public class WorkspaceManager {
                                     sessionUserNameOr("undefined"));
                        }))
                        .exceptionally(ex -> {
+                           states.remove(workspace.getId());
                            if (workspace.isTemporary()) {
                                removeWorkspaceQuietly(workspace);
                            }

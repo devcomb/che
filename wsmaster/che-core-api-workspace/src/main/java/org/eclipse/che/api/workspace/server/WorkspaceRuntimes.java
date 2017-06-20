@@ -232,6 +232,7 @@ public class WorkspaceRuntimes {
                                                    .withPrevStatus(WorkspaceStatus.STARTING));
                 } catch (InfrastructureException e) {
                     LOG.error(format("Error occurs on workspace '%s' start. Error: %s", workspaceId, e));
+                    runtimes.remove(workspaceId);
                     throw new RuntimeException(e);
                 }
             }), sharedPool.getExecutor());
