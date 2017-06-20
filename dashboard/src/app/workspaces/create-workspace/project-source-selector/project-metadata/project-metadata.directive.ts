@@ -35,7 +35,8 @@ export class ProjectMetadata implements ng.IDirective {
    */
   constructor() {
     this.scope = {
-      template: '='
+      template: '=',
+      templateName: '@'
     };
   }
 

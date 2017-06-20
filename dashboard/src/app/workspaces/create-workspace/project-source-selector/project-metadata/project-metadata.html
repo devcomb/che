@@ -34,34 +34,34 @@
     </che-input-box>
 
     <!-- Git URL -->
-    <che-inputbox ng-if="projectMetadataController.template.sourceType==='git'"
-                  che-form="projectMetadataForm"
-                  che-name="projectGitURL"
-                  che-label-name="Repository URL"
-                  che-place-holder="Url of the git repository"
-                  aria-label="Url of the git repository"
-                  che-width="auto"
-                  ng-model="projectMetadataController.template.sourceLocation"
-                  ng-change="projectMetadataController.onMetadataChanged()"
-                  git-url
-                  required>
-      <div ng-message="gitUrl">Invalid Git URL</div>
-      <div ng-message="required">A repository URL is required.</div>
-    </che-inputbox>
+    <div ng-if="projectMetadataController.template.source.type==='git'">
+      <che-input-box che-form="projectMetadataForm"
+                     che-name="projectGitURL"
+                     che-label-name="Repository URL"
+                     che-place-holder="Url of the git repository"
+                     aria-label="Url of the git repository"
+                     che-width="auto"
+                     ng-model="projectMetadataController.template.source.location"
+                     ng-change="projectMetadataController.onMetadataChanged()"
+                     git-url
+                     required>
+        <div ng-message="gitUrl">Invalid Git URL</div>
+      </che-input-box>
+    </div>
 
     <!-- Zip URL -->
-    <che-inputbox ng-if="projectMetadataController.template.sourceType==='zip'"
-                  che-form="createProjectZipForm"
-                  che-name="projectZipURL"
-                  che-label-name="ZIP file URL"
-                  che-place-holder="Url of the zip file"
-                  aria-label="Url of the zip file"
-                  che-width="auto"
-                  ng-model="projectMetadataController.template.sourceLocation"
-                  ng-change="projectMetadataController.onMetadataChanged()"
-                  required>
-      <div ng-message="required">A zip URL is required.</div>
-    </che-inputbox>
+    <div ng-if="projectMetadataController.template.source.type==='zip'">
+      <che-input-box che-form="createProjectZipForm"
+                     che-name="projectZipURL"
+                     che-label-name="ZIP file URL"
+                     che-place-holder="Url of the zip file"
+                     aria-label="Url of the zip file"
+                     che-width="auto"
+                     ng-model="projectMetadataController.template.source.location"
+                     ng-change="projectMetadataController.onMetadataChanged()"
+                     required>
+      </che-input-box>
+    </div>
 
   </form>
 </div>

@@ -77,7 +77,8 @@
       <ng-form name="projectTemplateForm"
                ng-if="projectSourceSelectorController.projectTemplateCopy">
 
-        <project-metadata template="projectSourceSelectorController.projectTemplateCopy"></project-metadata>
+        <project-metadata template="projectSourceSelectorController.projectTemplateCopy"
+                          template-name="{{projectSourceSelectorController.projectTemplateCopy.name}}"></project-metadata>
 
         <md-divider class="project-metadata-divider"></md-divider>
 

@@ -32,7 +32,7 @@ export class ProjectMetadataController {
    */
   private template: che.IProjectTemplate;
   /**
-   * Original template name;
+   * Original template name provided from parent controller.
    */
   private templateName: string;
 
@@ -43,8 +43,6 @@ export class ProjectMetadataController {
   constructor(projectMetadataService: ProjectMetadataService, projectSourceSelectorService: ProjectSourceSelectorService) {
     this.projectMetadataService = projectMetadataService;
     this.projectSourceSelectorService = projectSourceSelectorService;
-
-    this.templateName = this.template.name;
   }
 
   /**
