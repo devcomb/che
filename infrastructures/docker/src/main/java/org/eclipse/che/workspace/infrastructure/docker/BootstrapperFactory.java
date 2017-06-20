@@ -8,27 +8,17 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.workspace.runtime;
+package org.eclipse.che.workspace.infrastructure.docker;
+
+import com.google.inject.assistedinject.Assisted;
+
+import org.eclipse.che.api.core.model.workspace.runtime.RuntimeIdentity;
 
 /**
- * Describes possible bootstrapper statuses.
- *
- * @author Max Shaposhnik (mshaposh@redhat.com)
+ * @author Sergii Leshchenko
  */
-public enum BootstrapperStatus {
-
-    /**
-     * Bootstrapping is in progress.
-     */
-    STARTING,
-
-    /**
-     * Bootstrapping done, everything is started ok.
-     */
-    DONE,
-
-    /**
-     * Bootstrapping failed (when any installer fails or any error occurs).
-     */
-    FAILED
+public interface BootstrapperFactory {
+    Bootstrapper create(@Assisted String machineName,
+                        @Assisted RuntimeIdentity runtimeIdentity,
+                        @Assisted DockerMachine dockerMachine);
 }
