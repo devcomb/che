@@ -7,7 +7,7 @@
                    che-place-holder="Url of the zip file"
                    aria-label="Url of the zip file"
                    che-width="auto"
-                   ng-change="importZipProjectController.onChanged()"
+                   che-on-change="importZipProjectController.onUrlChanged($value)"
                    ng-model="importZipProjectController.location"
                    required>
     </che-input-box>
@@ -15,7 +15,7 @@
     <div layout="row" layout-align="left"
          flex flex-offset="15">
       <md-checkbox ng-model="importZipProjectController.skipFirstLevel"
-                   ng-change="importZipProjectController.onChanged()"
+                   ng-change="importZipProjectController.onCheckboxChanged()"
                    aria-label="Skip the root folder of the archive">
         Skip the root folder of the archive
       </md-checkbox>

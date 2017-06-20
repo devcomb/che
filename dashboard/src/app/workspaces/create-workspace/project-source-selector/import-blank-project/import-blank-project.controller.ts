@@ -66,14 +66,25 @@ export class ImportBlankProjectController implements IProjectSourceSelectorServi
     this.name = '';
     this.description = '';
 
-    this.onChanged();
+    this.importBlankProjectService.onChanged();
   }
 
   /**
-   * Callback which is called when project's name or description is changed.
+   * Callback which is called when project's name is changed.
+   *
+   * @param {string} name the blank project's name
    */
-  onChanged(): void {
-    this.importBlankProjectService.onChanged(this.name, this.description);
+  onNameChanged(name: string): void {
+    this.importBlankProjectService.onChanged(name, this.description);
+  }
+
+  /**
+   * Callback which is called when project's description is changed.
+   *
+   * @param {string} description the blank project's description
+   */
+  onDescriptionChanged(description: string): void {
+    this.importBlankProjectService.onChanged(this.name, description);
   }
 
   /**

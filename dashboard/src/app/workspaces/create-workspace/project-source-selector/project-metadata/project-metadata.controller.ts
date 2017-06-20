@@ -46,9 +46,32 @@ export class ProjectMetadataController {
   }
 
   /**
-   * Callback which is called when metadata is changed.
+   * Callback which is called when name is changed.
+   *
+   * @param {string} name the project's name
    */
-  onMetadataChanged(): void {
+  onNameChanged(name: string): void {
+    this.template.name = name;
+    this.projectMetadataService.onMetadataChanged(this.template);
+  }
+
+  /**
+   * Callback which is called when description is changed.
+   *
+   * @param {string} description the project's description
+   */
+  onDescriptionChanged(description: string): void {
+    this.template.description = description;
+    this.projectMetadataService.onMetadataChanged(this.template);
+  }
+
+  /**
+   * Callback which is called when metadata is changed.
+   *
+   * @param {string} location the project's source location
+   */
+  onUrlChanged(location: string): void {
+    this.template.source.location = location;
     this.projectMetadataService.onMetadataChanged(this.template);
   }
 

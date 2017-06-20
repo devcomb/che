@@ -6,7 +6,7 @@
                    che-place-holder="Url of the git repository"
                    aria-label="Url of the git repository"
                    che-width="auto"
-                   ng-change="importGitProjectController.onChanged()"
+                   che-on-change="importGitProjectController.onChanged($value)"
                    ng-model="importGitProjectController.location"
                    git-url
                    required>

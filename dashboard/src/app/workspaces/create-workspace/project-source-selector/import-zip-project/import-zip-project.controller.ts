@@ -66,13 +66,22 @@ export class ImportZipProjectController implements IProjectSourceSelectorService
     this.location = '';
     this.skipFirstLevel = false;
 
-    this.onChanged();
+    this.importZipProjectService.onChanged();
+  }
+
+  /**
+   * Callback which is called when location or source parameter is changed.
+   *
+   * @param {string} location the zip project's location
+   */
+  onUrlChanged(location: string): void {
+    this.importZipProjectService.onChanged(location, this.skipFirstLevel);
   }
 
   /**
    * Callback which is called when location or source parameter is changed.
    */
-  onChanged(): void {
+  onCheckboxChanged(): void {
     this.importZipProjectService.onChanged(this.location, this.skipFirstLevel);
   }
 }

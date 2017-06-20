@@ -59,15 +59,16 @@ export class ImportGitProjectController implements IProjectSourceSelectorService
     }
 
     this.location = '';
-
-    this.onChanged();
+    this.importGitProjectService.onLocationChanged();
   }
 
   /**
    * Callback which is called when location is changed.
+   *
+   * @param {string} location the git project location
    */
-  onChanged(): void {
-    this.importGitProjectService.onLocationChanged(this.location);
+  onChanged(location: string): void {
+    this.importGitProjectService.onLocationChanged(location);
   }
 
 }

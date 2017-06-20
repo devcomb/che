@@ -6,8 +6,8 @@
                    che-label-name="Name"
                    che-place-holder="Name of the project"
                    aria-label="Name of the project"
+                   che-on-change="importBlankProjectController.onNameChanged($value)"
                    ng-model="importBlankProjectController.name"
-                   ng-change="importBlankProjectController.onChanged()"
                    required
                    custom-validator="importBlankProjectController.isNameUnique($value)"
                    ng-maxlength="128"
@@ -24,7 +24,7 @@
                    che-place-holder="Description of the project"
                    aria-label="Description of the project"
                    che-width="auto"
-                   ng-change="importBlankProjectController.onChanged()"
+                   che-on-change="importBlankProjectController.onDescriptionChanged($value)"
                    ng-model="importBlankProjectController.description"
                    ng-maxlength="256">
       <div ng-message="maxlength">The name has to be less than 256 characters long.</div>
