@@ -10,7 +10,7 @@
  */
 'use strict';
 import {CheAPI} from '../../../../../components/api/che-api.factory';
-import {CheBranding} from '../../../../../components/branding/che-branding.factory';
+import {IGithubRepository} from './github-repository-interface';
 
 export enum LoadingState {
   NO_REPO, IDLE, LOADING, LOADED, LOAD_ERROR
@@ -36,79 +36,27 @@ export class ImportGithubProjectService {
    */
   private $q: ng.IQService;
   /**
-   * Windows service.
-   */
-  private $window: ng.IWindowService;
-  /**
-   * Material's dialog service.
-   */
-  private $mdDialog: ng.material.IDialogService;
-  /**
-   * Location service.
-   */
-  private $location: ng.ILocationService;
-  /**
-   * Browser service.
-   */
-  private $browser: ng.IBrowserService;
-  /**
-   * Modals service.
-   */
-  private $modal: any;
-  /**
    * Filter service.
    */
   private $filter: ng.IFilterService;
   /**
-   * Timeout service.
-   */
-  private $timeout: ng.ITimeoutService;
-  /**
-   * todo
+   * GitHub API
    */
   private GitHub: any;
   /**
-   * todo
+   * Token store.
    */
   private gitHubTokenStore: any;
   /**
-   * todo
+   * The list of all user's GitHub organizations.
    */
-  private githubPopup: any;
+  private organizations: any[];
   /**
-   * Branding data.
+   * The list of all user's GitHub repositories.
    */
-  private cheBranding: CheBranding;
+  private gitHubRepositories: Array<IGithubRepository>;
   /**
-   * todo
-   */
-  private githubOrganizationNameResolver: any;
-  /**
-   * todo
-   */
-  private productName: string;
-  /**
-   * User's profile.
-   */
-  private profile: che.IProfile;
-  /**
-   * todo
-   */
-  // private currentTokenCheck: any;
-  /**
-   * todo
-   */
-  private resolveOrganizationName: any;
-  /**
-   * todo
-   */
-  private organizations: string[];
-  /**
-   * todo
-   */
-  private gitHubRepositories: string[];
-  /**
-   * todo
+   * Loading state enum.
    */
   private state: LoadingState;
   /**
@@ -120,89 +68,101 @@ export class ImportGithubProjectService {
    */
   private currentUserId: string;
   /**
-   * todo
-   */
-  private selectedRepository: any;
-  /**
-   * todo
+   * Current token check.
    */
   private currentTokenCheck: any;
   /**
-   * todo
+   * The list of selected repositories.
    */
-  private repositorySelectNotify: Function;
+  private selectedRepositories: Array<IGithubRepository>;
 
   /**
    * Default constructor that is using resource
    * @ngInject for Dependency injection
    */
-  constructor (cheAPI: CheAPI, $http: ng.IHttpService, $q: ng.IQService, $window: ng.IWindowService, $mdDialog: ng.material.IDialogService, $location: ng.ILocationService, $browser: ng.IBrowserService, $modal: any, $filter: ng.IFilterService, $timeout: ng.ITimeoutService, GitHub: any, githubPopup: any, gitHubTokenStore: any, cheBranding: CheBranding, githubOrganizationNameResolver: any) {
+  constructor (cheAPI: CheAPI, $http: ng.IHttpService, $q: ng.IQService, $filter: ng.IFilterService, GitHub: any, gitHubTokenStore: any) {
     this.cheAPI = cheAPI;
     this.$http = $http;
     this.$q = $q;
-    this.$window = $window;
-    this.$mdDialog = $mdDialog;
-    this.$location = $location;
-    this.$browser = $browser;
-    this.$modal = $modal;
     this.$filter = $filter;
     this.GitHub = GitHub;
     this.gitHubTokenStore = gitHubTokenStore;
-    this.githubPopup = githubPopup;
-    this.cheBranding = cheBranding;
-    this.githubOrganizationNameResolver = githubOrganizationNameResolver;
-    this.$timeout = $timeout;
-
-    this.productName = cheBranding.getName();
-
-    this.profile = cheAPI.getProfile().getProfile();
 
     this.currentTokenCheck = null;
-    this.resolveOrganizationName = this.githubOrganizationNameResolver.resolve;
 
     this.organizations = [];
     this.gitHubRepositories = [];
+
+    this.selectedRepositories = [];
 
     this.state = LoadingState.IDLE;
     this.isGitHubOAuthProviderAvailable = false;
   }
 
-  fetchAll(): ng.IPromise<any> {
-    let oAuthProviderPromise = this.cheAPI.getOAuthProvider().fetchOAuthProviders().then(() => {
-      this.isGitHubOAuthProviderAvailable = this.cheAPI.getOAuthProvider().isOAuthProviderRegistered('github');
-    });
+  /**
+   * Fetches current user ID.
+   *
+   * @return {IPromise<any>}
+   */
+  getOrFetchUserId(): ng.IPromise<any> {
+    const defer = this.$q.defer();
 
-    // check token validity and load repositories
-    return this.$q.all([
-      oAuthProviderPromise,
-      this.profile.$promise
-    ]).then(() => {
-      if (this.isGitHubOAuthProviderAvailable) {
-        this.currentUserId = this.profile.userId;
-        this.askLoad();
-      } else {
-        this.state = LoadingState.NO_REPO;
-      }
-    });
+    const user = this.cheAPI.getUser().getUser();
+    if (user) {
+      this.currentUserId = user.id;
+      defer.resolve(this.currentUserId);
+    } else {
+      this.cheAPI.getUser().fetchUser().finally(() => {
+        const user = this.cheAPI.getUser().getUser();
+        if (user) {
+          this.currentUserId = user.id;
+        }
+        defer.resolve(this.currentUserId);
+      });
+    }
+
+    return defer.promise;
   }
 
   /**
-   * todo
+   * Fetches GitHub oauth provider.
+   *
+   * @return {IPromise<any>}
    */
-  askLoad(): void {
+  getOrFetchOAuthProvider(): ng.IPromise<any> {
+    const defer = this.$q.defer();
+
+    this.isGitHubOAuthProviderAvailable = this.cheAPI.getOAuthProvider().isOAuthProviderRegistered('github');
+    if (this.isGitHubOAuthProviderAvailable) {
+      defer.resolve(this.isGitHubOAuthProviderAvailable);
+    } else {
+      this.cheAPI.getOAuthProvider().fetchOAuthProviders().finally(() => {
+        this.isGitHubOAuthProviderAvailable = this.cheAPI.getOAuthProvider().isOAuthProviderRegistered('github');
+        defer.resolve(this.isGitHubOAuthProviderAvailable);
+      });
+    }
+
+    return defer.promise;
+  }
+
+  /**
+   * Tries to load user's GitHub repositories.
+   *
+   * @return {IPromise<any>}
+   */
+  askLoad(): ng.IPromise<any> {
     this.state = LoadingState.LOADING;
-    this.checkTokenValidity().then(() => {
-      this.loadRepositories();
+    return this.checkTokenValidity().then(() => {
+      return this.loadRepositories();
     }).catch(() => {
       this.state = LoadingState.NO_REPO;
     });
   }
 
   /**
-   * todo
-   * let
+   * Fetches GitHub token.
    *
-   * @return {IPromise<boolean>}
+   * @return {IPromise<any>}
    */
   getAndStoreRemoteToken(): ng.IPromise<any> {
     return this.$http({method: 'GET', url: '/api/oauth/token?oauth_provider=github'}).then( (result: any) => {
@@ -217,8 +177,7 @@ export class ImportGithubProjectService {
   }
 
   /**
-   * todo
-   * let
+   * Checks token validity.
    *
    * @return {any}
    */
@@ -237,25 +196,30 @@ export class ImportGithubProjectService {
   }
 
   /**
-   * todo
-   * let
+   * Checks GitHub authentication.
+   *
+   * @return {IPromise<any>}
    */
   checkGitHubAuthentication(): ng.IPromise<any> {
     return this.checkTokenValidity().then( () => {
-      return this.$q.defer().resolve('true');
+      return this.$q.defer().resolve();
     });
   }
 
   /**
-   * todo
-   * let
+   * Load user's GitHub repositories.
+   *
+   * @return {IPromise<any>}
    */
-  loadRepositories(): void {
-    this.checkGitHubAuthentication().then( () => {
+  loadRepositories(): ng.IPromise<any> {
+    this.organizations.length = 0;
+    this.gitHubRepositories.length = 0;
+
+    return this.checkGitHubAuthentication().then( () => {
       const user = this.GitHub.user().get();
 
       this.organizations.push(user);
-      this.GitHub.organizations().query().$promise.then((organizations: any) => {
+      return this.GitHub.organizations().query().$promise.then((organizations: any) => {
 
         this.organizations = this.organizations.concat(organizations);
 
@@ -266,8 +230,8 @@ export class ImportGithubProjectService {
           }
         });
 
-        this.GitHub.userRepositories().query().$promise.then((repositories: any) => {
-          this.gitHubRepositories = this.$filter('filter')(repositories, (repository: any) => {
+        return this.GitHub.userRepositories().query().$promise.then((repositories: Array<IGithubRepository>) => {
+          this.gitHubRepositories = this.$filter('filter')(repositories, (repository: IGithubRepository) => {
             return organizationNames.indexOf(repository.owner.login) >= 0;
           });
           this.state = LoadingState.LOADED;
@@ -279,25 +243,25 @@ export class ImportGithubProjectService {
   }
 
   /**
-   * todo
+   * Returns list of user's GitHub organizations.
    *
-   * @return {string[]}
+   * @return {any[]}
    */
-  getOrganizations(): any {
+  getOrganizations(): any[] {
     return this.organizations;
   }
 
   /**
-   * todo
+   * Returns list of user's GitHub repositories.
    *
-   * @return {string[]}
+   * @return {any[]}
    */
-  getGithubRepositories(): any {
+  getGithubRepositories(): Array<IGithubRepository> {
     return this.gitHubRepositories;
   }
 
   /**
-   * todo
+   * Returns current loading start.
    *
    * @return {LoadingState}
    */
@@ -306,12 +270,55 @@ export class ImportGithubProjectService {
   }
 
   /**
-   * todo
+   * Returns <code>true</code> if GitHub OAuth provider is available.
    *
-   * @return {boolean|(()=>boolean)}
+   * @return {boolean}
    */
   getIsGitHubOAuthProviderAvailable(): boolean {
     return this.isGitHubOAuthProviderAvailable;
   }
 
+  /**
+   * Returns list of selected repositories.
+   *
+   * @return {any[]}
+   */
+  getSelectedRepositories(): Array<IGithubRepository> {
+    return this.selectedRepositories;
+  }
+
+  /**
+   * Updates list of selected repositories.
+   *
+   * @param {any[]} repositories the list of selected repositories.
+   */
+  onRepositorySelected(repositories: Array<IGithubRepository>): void {
+    this.selectedRepositories = repositories;
+  }
+
+  /**
+   * Builds and returns list of project templates.
+   *
+   * @return {Array<che.IProjectTemplate>}
+   */
+  getRepositoriesProps(): Array<che.IProjectTemplate> {
+    return this.selectedRepositories.map((repository: IGithubRepository) => {
+      const props = {} as che.IProjectTemplate;
+
+      const name = repository.owner.login + '-' + repository.name;
+      const path = '/' +  name.replace(/[^\w-_]/g, '_');
+      props.name = name;
+      props.displayName = name;
+      props.description = repository.description;
+      props.path = path;
+      props.category = '';
+
+      props.source = {
+        type: 'git',
+        location: repository.clone_url
+      };
+
+      return props;
+    });
+  }
 }

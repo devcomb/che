@@ -10,9 +10,12 @@
  */
 'use strict';
 
-import {CheAPI} from '../../../../../components/api/che-api.factory';
 import {CheBranding} from '../../../../../components/branding/che-branding.factory';
 import {ImportGithubProjectService, LoadingState} from './import-github-project.service';
+import {IProjectSourceSelectorServiceObserver} from '../project-source-selector-service.observer';
+import {ProjectSourceSelectorService} from '../project-source-selector.service';
+import {ProjectSource} from '../project-source.enum';
+import {IGithubRepository} from './github-repository-interface';
 
 /**
  * This class is handling the controller for the GitHub part
@@ -20,27 +23,11 @@ import {ImportGithubProjectService, LoadingState} from './import-github-project.
  * @author Florent Benoit
  * @author Oleksii Kurinnyi
  */
-export class ImportGithubProjectController {
-  /**
-   * API entry point.
-   */
-  private cheAPI: CheAPI;
-  /**
-   * HTTP service.
-   */
-  private $http: ng.IHttpService;
-  /**
-   * Root scope service.
-   */
-  private $rootScope: ng.IRootScopeService;
+export class ImportGithubProjectController implements IProjectSourceSelectorServiceObserver {
   /**
    * Promises service.
    */
   private $q: ng.IQService;
-  /**
-   * Windows service.
-   */
-  private $window: ng.IWindowService;
   /**
    * Material's dialog service.
    */
@@ -58,23 +45,7 @@ export class ImportGithubProjectController {
    */
   private $modal: any;
   /**
-   * Filter service.
-   */
-  private $filter: ng.IFilterService;
-  /**
-   * Timeout service.
-   */
-  private $timeout: ng.ITimeoutService;
-  /**
-   * todo
-   */
-  private GitHub: any;
-  /**
-   * todo
-   */
-  private gitHubTokenStore: any;
-  /**
-   * todo
+   * GitHub authentication popup window.
    */
   private githubPopup: any;
   /**
@@ -82,23 +53,23 @@ export class ImportGithubProjectController {
    */
   private cheBranding: CheBranding;
   /**
-   * todo
+   * GitHub's organization type resolver service.
    */
   private githubOrganizationNameResolver: any;
   /**
-   * todo
+   * Project source selector service.
+   */
+  private projectSourceSelectorService: ProjectSourceSelectorService;
+  /**
+   * Product name.
    */
   private productName: string;
   /**
-   * User's profile.
-   */
-  private profile: che.IProfile;
-  /**
-   * todo
+   * GitHub organization name.
    */
   private resolveOrganizationName: any;
   /**
-   * todo
+   * Loading states enum.
    */
   private loadingState: Object;
   /**
@@ -106,70 +77,70 @@ export class ImportGithubProjectController {
    */
   private currentUserId: string;
   /**
-   * todo
+   * Import GitHub project service.
    */
-  private selectedRepository: any;
-  /**
-   * todo
-   */
-  private repositorySelectNotify: Function;
-
   private importGithubProjectService: ImportGithubProjectService;
   /**
    * Number of selected GitHub projects.
    */
   private selectedRepositoriesNumber: number;
   /**
-   * Lists helper.
+   * The GitHub organization.
+   */
+  private organization: {
+    login: string;
+    [prop: string]: string;
+  };
+  /**
+   * The helper to manage list of items.
    */
   private cheListHelper: che.widget.ICheListHelper;
   /**
-   * todo
+   * Repository filter by name.
    */
   private repositoryFilter: {
     name: string;
   };
   /**
-   * todo
+   * Repository filter by organization.
    */
   private organizationFilter: {
-    name: string;
+    owner: {
+      login: string;
+    };
   };
+  /**
+   * The list of GitHub repositories.
+   */
+  private githubRepositoriesList: Array<IGithubRepository>;
+  /**
+   * The list of GitHub organization.
+   */
+  private organizationsList: any;
+  /**
+   * The list of selected repositories.
+   */
+  private selectedRepositories: Array<IGithubRepository>;
 
   /**
    * Default constructor that is using resource
    * @ngInject for Dependency injection
    */
-  constructor (cheAPI: CheAPI, $rootScope: ng.IRootScopeService, $http: ng.IHttpService, $q: ng.IQService, $window: ng.IWindowService, $mdDialog: ng.material.IDialogService, $location: ng.ILocationService, $browser: ng.IBrowserService, $modal: any, $filter: ng.IFilterService, $timeout: ng.ITimeoutService, $scope: ng.IScope, GitHub: any, githubPopup: any, gitHubTokenStore: any, cheBranding: CheBranding, githubOrganizationNameResolver: any,
-               importGithubProjectService: ImportGithubProjectService, cheListHelperFactory: che.widget.ICheListHelperFactory) {
-    this.cheAPI = cheAPI;
-    this.$http = $http;
-    this.$rootScope = $rootScope;
+  constructor ($q: ng.IQService, $mdDialog: ng.material.IDialogService, $location: ng.ILocationService, $browser: ng.IBrowserService, $modal: any, $scope: ng.IScope, githubPopup: any, cheBranding: CheBranding, githubOrganizationNameResolver: any, importGithubProjectService: ImportGithubProjectService, cheListHelperFactory: che.widget.ICheListHelperFactory, projectSourceSelectorService: ProjectSourceSelectorService) {
     this.$q = $q;
-    this.$window = $window;
     this.$mdDialog = $mdDialog;
     this.$location = $location;
     this.$browser = $browser;
     this.$modal = $modal;
-    this.$filter = $filter;
-    this.GitHub = GitHub;
-    this.gitHubTokenStore = gitHubTokenStore;
     this.githubPopup = githubPopup;
     this.cheBranding = cheBranding;
     this.githubOrganizationNameResolver = githubOrganizationNameResolver;
-    this.$timeout = $timeout;
+    this.resolveOrganizationName = this.githubOrganizationNameResolver.resolve;
+    this.projectSourceSelectorService = projectSourceSelectorService;
 
     this.importGithubProjectService = importGithubProjectService;
-    this.loadingState = LoadingState;
-
     this.productName = cheBranding.getName();
-
-    this.profile = cheAPI.getProfile().getProfile();
-
-    this.resolveOrganizationName = this.githubOrganizationNameResolver.resolve;
-
-    this.currentUserId = this.profile.userId;
-    this.importGithubProjectService.fetchAll();
+    this.loadingState = LoadingState;
 
     const helperId = 'import-github-project';
     this.cheListHelper = cheListHelperFactory.getHelper(helperId);
@@ -178,38 +149,55 @@ export class ImportGithubProjectController {
     });
 
     this.repositoryFilter = {name: ''};
-    this.organizationFilter = {name: ''};
+    this.organizationFilter = {
+      owner: {
+        login: ''
+      }
+    };
+
+    this.githubRepositoriesList = this.importGithubProjectService.getGithubRepositories();
+    this.organizationsList = this.importGithubProjectService.getOrganizations();
+    this.cheListHelper.setList(this.githubRepositoriesList, 'clone_url');
+
+    this.selectedRepositories = this.importGithubProjectService.getSelectedRepositories();
+    this.projectSourceSelectorService.subscribe(this.onProjectSourceSelectorServicePublish.bind(this));
+
+    this.selectedRepositories.forEach((repository: IGithubRepository) => {
+      this.cheListHelper.itemsSelectionStatus[repository.clone_url] = true;
+    });
   }
 
+
   /**
-   * todo
+   * Returns current loading state.
    *
    * @return {LoadingState}
    */
   get state(): LoadingState {
     return this.importGithubProjectService.getState();
   }
-
   /**
-   * todo
+   * Callback which is called when repositories are added to the list of ready-to-import projects.
+   * Make repositories not selected.
    *
-   * @return {any}
+   * @param {ProjectSource} source the project's source
    */
-  get organizations(): any {
-    return this.importGithubProjectService.getOrganizations();
-  }
+  onProjectSourceSelectorServicePublish(source: ProjectSource): void {
+    if (source !== ProjectSource.GITHUB) {
+      return;
+    }
 
-  get gitHubRepositories(): any {
-    const repositories = this.importGithubProjectService.getGithubRepositories();
-    // console.log('>>> repositories: ', repositories);
-    this.cheListHelper.setList(repositories, 'clone_url');
-    return this.importGithubProjectService.getGithubRepositories();
+    this.cheListHelper.deselectAllItems();
+    this.selectedRepositories = [];
+    this.selectedRepositoriesNumber = this.cheListHelper.getSelectedItems().length;
+
+    this.importGithubProjectService.onRepositorySelected(this.selectedRepositories);
   }
 
   /**
-   * todo
+   * Shows authentication popup window.
    */
-  authenticateWithGitHub(): ng.IPromise<any> {
+  authenticateWithGitHub(): void {
     if (!this.importGithubProjectService.getIsGitHubOAuthProviderAvailable()) {
       this.$mdDialog.show({
         controller: 'NoGithubOauthDialogController',
@@ -227,7 +215,7 @@ export class ImportGithubProjectController {
       + this.$location.port()
       + (this.$browser as any).baseHref()
       + 'gitHubCallback.html';
-    return this.githubPopup.open('/api/oauth/authenticate'
+    this.githubPopup.open('/api/oauth/authenticate'
       + '?oauth_provider=github'
       + '&scope=' + ['user', 'repo', 'write:public_key'].join(',')
       + '&userId=' + this.currentUserId
@@ -245,32 +233,17 @@ export class ImportGithubProjectController {
   }
 
   /**
-   * todo remove
+   * Returns organization's type.
    *
-   * @param gitHubRepository
-   */
-  selectRepository(gitHubRepository: any): void {
-    this.selectedRepository = gitHubRepository;
-    this.$timeout(() => {
-      this.repositorySelectNotify();
-      // broadcast event
-      this.$rootScope.$broadcast('create-project-github:selected');
-    });
-  }
-
-  /**
-   * todo
-   *
-   * @param organization
-   * @return {string|string}
+   * @param {any} organization the organization
+   * @return {string}
    */
   resolveOrganizationType(organization: any): string {
     return organization.name ? 'Your account' : 'Your organization\'s account';
   }
 
   /**
-   * Returns <code>true</code> if at least one project is selected in the list.
-   * todo remove
+   * Returns <code>true</code> if at least one repository is selected in the list.
    *
    * @return {boolean}
    */
@@ -282,37 +255,29 @@ export class ImportGithubProjectController {
    * Callback which is called when repository is clicked.
    */
   onRepositorySelected(): void {
-    console.log('>>> ImportGithubProjectController.onRepositorySelected, arguments: ', arguments);
-    console.log('>>> this.cheListHelper.getSelectedItems(): ', this.cheListHelper.getSelectedItems());
-
+    this.selectedRepositories = this.cheListHelper.getSelectedItems() as Array<IGithubRepository>;
+    this.importGithubProjectService.onRepositorySelected(this.selectedRepositories);
     this.selectedRepositoriesNumber = this.cheListHelper.getSelectedItems().length;
   }
 
-  // callback when search value is changed
-  // todo
+  /**
+   * Callback which is called when search string is changed.
+   *
+   * @param {string} str the search string
+   */
   onSearchChanged(str: string): void {
-    console.log('>>> ImportGithubProjectController.onSearchChanged, str: ', str);
     this.repositoryFilter.name = str;
     this.cheListHelper.applyFilter('name', this.repositoryFilter);
-
     this.selectedRepositoriesNumber = this.cheListHelper.getSelectedItems().length;
   };
 
-  // callback when namespace is changed
-  // todo
-  onFilterChanged(label :  string): void {
-    console.log('>>> ImportGithubProjectController.onFilterChanged, label: ', label);
-    // if (label === this.ALL_NAMESPACES) {
-    //   this.namespaceFilter.namespace = '';
-    // } else {
-    //   let namespace = this.cheNamespaceRegistry.getNamespaces().find((namespace: che.INamespace) => {
-    //     return namespace.label === label;
-    //   });
-    //   this.namespaceFilter.namespace = namespace.id;
-    // }
-    // this.isExactMatch = (label === this.ALL_NAMESPACES) ? false : true;
-    //
-    // this.cheListHelper.applyFilter('namespace', this.namespaceFilter, this.isExactMatch);
+  /**
+   * Callback which is called when organization selected.
+   */
+  onOrganizationSelect(): void {
+    const login = this.organization && this.organization.login ? this.organization.login : '';
+    this.organizationFilter.owner.login = login;
+    this.cheListHelper.applyFilter('name', this.organizationFilter);
     this.selectedRepositoriesNumber = this.cheListHelper.getSelectedItems().length;
   };
 

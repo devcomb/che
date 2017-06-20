@@ -25,7 +25,7 @@
 
     <!-- loaded -->
     <div ng-if="importGithubProjectController.state == importGithubProjectController.loadingState.LOADED">
-      <div layout="row" layout-align="start flex-start">
+      <div layout="row" layout-align="start flex-start" class="import-github-project-filters">
 
         <!-- search field -->
         <div layout="row"
@@ -42,8 +42,9 @@
              class="import-github-project-dropdown-component">
           <select flex id="organizationFilter"
                   class="import-github-project-select"
-                  ng-model="importGithubProjectController.organizationName"
-                  ng-options="importGithubProjectController.resolveOrganizationName(organization) group by importGithubProjectController.resolveOrganizationType(organization) for organization in importGithubProjectController.organizations">
+                  ng-model="importGithubProjectController.organization"
+                  ng-change="importGithubProjectController.onOrganizationSelect()"
+                  ng-options="importGithubProjectController.resolveOrganizationName(organization) group by importGithubProjectController.resolveOrganizationType(organization) for organization in importGithubProjectController.organizationsList">
             <option value="">All Organizations</option>
           </select>
         </div>
@@ -51,7 +52,7 @@
 
       <!-- repositories list -->
       <che-list class="import-github-project-repositories-list">
-        <github-repository-item ng-repeat="gitHubRepository in importGithubProjectController.gitHubRepositories | githubFilterRepositories:importGithubProjectController.organizationName:importGithubProjectController.repositoryName | orderBy:'name'"
+        <github-repository-item ng-repeat="gitHubRepository in importGithubProjectController.cheListHelper.getVisibleItems() | orderBy:'name'"
                                 flex-gt-sm="100" flex="33"
                                 git-hub-repository="gitHubRepository"
                                 checked-repositories="importGithubProjectController.cheListHelper.itemsSelectionStatus"
