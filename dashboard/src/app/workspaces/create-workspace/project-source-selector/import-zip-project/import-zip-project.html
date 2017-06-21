@@ -1,7 +1,8 @@
 <div class="import-zip">
   <form name="importZipProjectForm">
 
-    <che-input-box che-form="importZipProjectForm"
+    <che-input-box ng-init="importZipProjectController.registerForm(importZipProjectForm)"
+                   che-form="importZipProjectForm"
                    che-name="remoteZipURL"
                    che-label-name="Zip URL"
                    che-place-holder="Url of the zip file"

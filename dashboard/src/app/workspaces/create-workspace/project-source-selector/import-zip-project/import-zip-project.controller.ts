@@ -37,6 +37,10 @@ export class ImportZipProjectController implements IProjectSourceSelectorService
    * Skip the root folder of archive if <code>true</code>
    */
   private skipFirstLevel: boolean;
+  /**
+   * Directive's form.
+   */
+  private form: ng.IFormController;
 
   /**
    * Default constructor that is using resource injection
@@ -67,6 +71,25 @@ export class ImportZipProjectController implements IProjectSourceSelectorService
     this.skipFirstLevel = false;
 
     this.importZipProjectService.onChanged();
+
+    this.refreshForm();
+  }
+
+  /**
+   * Register directive's form.
+   *
+   * @param {ng.IFormController} form
+   */
+  registerForm(form: ng.IFormController): void {
+    this.form = form;
+  }
+
+  /**
+   * Refresh form to eliminate all errors.
+   */
+  refreshForm(): void {
+    this.form.$setUntouched();
+    this.form.$setPristine();
   }
 
   /**
