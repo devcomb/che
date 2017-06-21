@@ -85,7 +85,7 @@ initModule.config(['$routeProvider', ($routeProvider: che.route.IRouteProvider) 
 
 }]);
 
-var DEV = true;
+var DEV = false;
 
 
 // configs
