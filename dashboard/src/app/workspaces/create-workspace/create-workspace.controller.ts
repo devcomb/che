@@ -254,7 +254,9 @@ export class CreateWorkspaceController {
 
     ['name', 'deskname'].forEach((inputName: string) => {
       const model = form[inputName] as ng.INgModelController;
-      model.$validate();
+      if (model) {
+        model.$validate();
+      }
     });
   }
 

@@ -4,7 +4,13 @@
   z-index: 2;
 
 .create-workspace-content
+  background-color $very-light-grey-background-color !important
   padding 15px;
+
+  .che-label-container-label-name
+    text-transform uppercase
+    color $grey-input-label-color !important
+    font-weight bold !important
 
   .create-workspace-content-hidden
     visibility hidden
@@ -19,19 +25,3 @@
   .create-workspace-name-form
     margin-top -18px
 
-  // temporary styles
-  // todo remove style below
-  .project-source-selector
-    .che-input-box-desktop
-      label
-        margin-top 12px
-        color $label-primary-color
-
-      //.che-input-box-desktop-value-column
-      //  margin-top -12px
-
-    .import-zip
-      md-checkbox
-        span
-          color $label-primary-color
-          vertical-align text-top
