@@ -37,6 +37,10 @@ export class ImportBlankProjectController implements IProjectSourceSelectorServi
    * Project's description.
    */
   private description: string;
+  /**
+   * Directive's form.
+   */
+  private form: ng.IFormController;
 
   /**
    * Default constructor that is using resource injection
@@ -67,6 +71,25 @@ export class ImportBlankProjectController implements IProjectSourceSelectorServi
     this.description = '';
 
     this.importBlankProjectService.onChanged();
+
+    this.refreshForm();
+  }
+
+  /**
+   * Register directive's form.
+   *
+   * @param {ng.IFormController} form
+   */
+  registerForm(form: ng.IFormController): void {
+    this.form = form;
+  }
+
+  /**
+   * Refresh form to eliminate all errors.
+   */
+  refreshForm(): void {
+    this.form.$setUntouched();
+    this.form.$setPristine();
   }
 
   /**

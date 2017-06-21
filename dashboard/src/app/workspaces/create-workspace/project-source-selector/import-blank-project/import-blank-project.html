@@ -1,7 +1,8 @@
 <div class="import-blank">
-  <form name="importBlankProjectForm">
+  <ng-form name="importBlankProjectForm">
 
-    <che-input-box che-form="importBlankProjectForm"
+    <che-input-box ng-init="importBlankProjectController.registerForm(importBlankProjectForm)"
+                   che-form="importBlankProjectForm"
                    che-name="name"
                    che-label-name="Name"
                    che-place-holder="Name of the project"
@@ -31,5 +32,5 @@
       <div ng-message="md-maxlength">The name has to be less than 256 characters long.</div>
     </che-input-box>
 
-  </form>
+  </ng-form>
 </div>
