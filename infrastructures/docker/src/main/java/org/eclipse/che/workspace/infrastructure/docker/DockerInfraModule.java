@@ -109,9 +109,6 @@ public class DockerInfraModule extends AbstractModule {
                         .implement(DockerInternalRuntime.class, DockerInternalRuntime.class)
                         .build(DockerRuntimeFactory.class));
 
-        bind(String.class).annotatedWith(Names.named("che.docker.che_server_installer_ws_endpoint"))
-                          .toProvider(DockerInstallerWsEndpointProvider.class);
-
         install(new FactoryModuleBuilder()
                         .implement(Bootstrapper.class, Bootstrapper.class)
                         .build(BootstrapperFactory.class));

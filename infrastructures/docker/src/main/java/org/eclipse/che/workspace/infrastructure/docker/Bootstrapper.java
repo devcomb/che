@@ -23,6 +23,7 @@ import org.eclipse.che.api.workspace.server.spi.InfrastructureException;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeIdentityDto;
 import org.eclipse.che.api.workspace.shared.dto.event.BootstrapperStatusEvent;
 import org.eclipse.che.commons.lang.TarUtils;
+import org.eclipse.che.workspace.infrastructure.docker.server.InstallerEndpoint;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -65,14 +66,15 @@ public class Bootstrapper {
     public Bootstrapper(@Assisted String machineName,
                         @Assisted RuntimeIdentity runtimeIdentity,
                         @Assisted DockerMachine dockerMachine,
-                        @Named("che.docker.che_server_installer_ws_endpoint") String wsIntallerEndpoint,
+                        //TODO Take a look property name
+                        @Named("che.workspace.che_server_ws_base_endpoint") String wsBaseEndpoint,
                         @Named("che.docker.bootstrapping_timeout_min") int bootstrappingTimeoutMinutes,
                         EventService eventService) {
         this.machineName = machineName;
         this.runtimeIdentity = runtimeIdentity;
         this.dockerMachine = dockerMachine;
         this.bootstrappingTimeoutMinutes = bootstrappingTimeoutMinutes;
-        this.wsIntallerEndpoint = wsIntallerEndpoint;
+        this.wsIntallerEndpoint = wsBaseEndpoint + InstallerEndpoint.INSTALLER_WEBSOCKET_ENDPOINT_BASE;
         this.eventService = eventService;
         this.endpointId = new AtomicInteger();
         this.bootstrapperStatusListener = event -> {
